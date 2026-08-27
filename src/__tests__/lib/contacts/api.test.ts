@@ -9,6 +9,7 @@ import {
   getContact,
   getHealth,
   listContacts,
+  uploadProfilePicture,
   toFieldErrors,
 } from "@/lib/contacts/api";
 import type { ContactInput } from "@/lib/contacts/types";
@@ -21,6 +22,7 @@ const INPUT: ContactInput = {
   first_name: "Grace",
   last_name: "Hopper",
   email: "grace@example.com",
+  profile_picture: null,
   phone: null,
   company: null,
   job_title: null,
@@ -102,6 +104,28 @@ describe("createContact", () => {
     );
 
     await expect(createContact(INPUT)).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+describe("uploadProfilePicture", () => {
+  it("sends the picture as multipart form data", async () => {
+    let contentType: string | null = null;
+    let hasPicture = false;
+    server.use(
+      http.post(api("/api/v1/contacts/:id/profile-picture"), async ({ request }) => {
+        contentType = request.headers.get("content-type");
+        const uploaded = (await request.formData()).get("picture");
+        hasPicture = uploaded != null;
+        return HttpResponse.json({ profile_picture: "/media/avatar.png" });
+      }),
+    );
+
+    const picture = new File(["image bytes"], "avatar.png", { type: "image/png" });
+    await expect(uploadProfilePicture(picture)).resolves.toEqual({
+      profile_picture: "/api/media/profile-pictures/avatar.png",
+    });
+    expect(contentType).not.toBe("application/json");
+    expect(hasPicture).toBe(true);
   });
 });
 

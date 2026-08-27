@@ -8,14 +8,16 @@ import {
   createContact,
   deleteContact,
   replaceContact,
+  uploadProfilePicture,
   toFieldErrors,
 } from "@/lib/contacts/api";
 import {
+  MAX_PROFILE_PICTURE_BYTES,
   contactInputSchema,
   formDataToValues,
   zodFieldErrors,
 } from "@/lib/contacts/schema";
-import type { Contact, FormState } from "@/lib/contacts/types";
+import type { Contact, ContactInput, FormState } from "@/lib/contacts/types";
 
 /** Mutations for the contacts UI. Every one of these runs only on the server. */
 
@@ -39,6 +41,17 @@ export async function saveContactAction(
   formData: FormData,
 ): Promise<FormState> {
   const values = formDataToValues(formData);
+  const profilePicture = formData.get("profile_picture");
+  const existingPicture = formData.get("existing_profile_picture");
+
+  if (profilePicture instanceof File && profilePicture.size > MAX_PROFILE_PICTURE_BYTES) {
+    return {
+      status: "error",
+      message: "Please fix the highlighted fields.",
+      fieldErrors: { profile_picture: "Profile picture must be 5 MB or smaller" },
+      values,
+    };
+  }
 
   const parsed = contactInputSchema.safeParse(values);
   if (!parsed.success) {
@@ -52,10 +65,27 @@ export async function saveContactAction(
 
   let saved: Contact;
   try {
+    const input: ContactInput = {
+      ...parsed.data,
+      profile_picture:
+        profilePicture instanceof File && profilePicture.size > 0
+          ? null
+          : typeof existingPicture === "string" && existingPicture
+            ? existingPicture
+            : null,
+    };
     saved =
       contactId === null
-        ? await createContact(parsed.data)
-        : await replaceContact(contactId, parsed.data);
+        ? await createContact(input)
+        : await replaceContact(contactId, input);
+
+    if (profilePicture instanceof File && profilePicture.size > 0) {
+      const uploaded = await uploadProfilePicture(profilePicture);
+      saved = await replaceContact(saved.id, {
+        ...input,
+        profile_picture: uploaded.profile_picture,
+      });
+    }
   } catch (error) {
     if (error instanceof ApiUnreachableError) {
       return { status: "error", message: UNREACHABLE, values };

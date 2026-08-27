@@ -23,12 +23,15 @@ describe("ContactForm", () => {
     expect(screen.getByLabelText(/first name/i)).toBeRequired();
     expect(screen.getByLabelText(/last name/i)).toBeRequired();
     expect(screen.getByLabelText(/^email/i)).toBeRequired();
+    expect(screen.getByLabelText(/profile picture/i)).not.toBeRequired();
     expect(screen.getByLabelText(/phone/i)).not.toBeRequired();
     expect(screen.getByLabelText(/notes/i).tagName).toBe("TEXTAREA");
   });
 
   it("prefills from an existing contact", () => {
-    renderForm(jest.fn(), makeContact());
+    renderForm(jest.fn(),
+      makeContact({ profile_picture: "https://example.com/ada-lovelace.jpg" }),
+    );
 
     expect(screen.getByLabelText(/first name/i)).toHaveValue("Ada");
     expect(screen.getByLabelText(/^email/i)).toHaveValue("ada@example.com");

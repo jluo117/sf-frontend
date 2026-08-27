@@ -30,6 +30,7 @@ export default function Field({
     required: field.required,
     placeholder: field.placeholder,
     autoComplete: field.autoComplete,
+    accept: field.accept,
     "aria-invalid": error ? true : undefined,
     "aria-describedby": error ? errorId : undefined,
     className: `${CONTROL} ${borderClass}`,
@@ -56,7 +57,11 @@ export default function Field({
       {field.type === "textarea" ? (
         <textarea {...shared} rows={4} className={`${shared.className} resize-y`} />
       ) : (
-        <input {...shared} type={field.type ?? "text"} />
+        <input
+          {...shared}
+          type={field.type ?? "text"}
+          {...(field.type === "file" ? { defaultValue: undefined } : {})}
+        />
       )}
 
       {error ? (

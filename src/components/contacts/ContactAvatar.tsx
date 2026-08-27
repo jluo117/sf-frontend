@@ -8,12 +8,12 @@ const SIZES = {
   lg: "h-14 w-14 text-lg",
 } as const;
 
-/** Initials bubble, tinted with a hue derived from the contact's email. */
+/** Profile picture with an initials fallback, tinted by the contact's email. */
 export default function ContactAvatar({
   contact,
   size = "md",
 }: {
-  contact: Pick<Contact, "first_name" | "last_name" | "email">;
+  contact: Pick<Contact, "first_name" | "last_name" | "email" | "profile_picture">;
   size?: keyof typeof SIZES;
 }) {
   const style = {
@@ -24,8 +24,15 @@ export default function ContactAvatar({
     <span
       aria-hidden="true"
       style={style}
-      className={`contact-avatar inline-flex shrink-0 select-none items-center justify-center rounded-full font-display font-semibold ${SIZES[size]}`}
+      className={`contact-avatar relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full font-display font-semibold ${SIZES[size]}`}
     >
+      {contact.profile_picture ? (
+        <img
+          src={contact.profile_picture}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
       {initials(contact)}
     </span>
   );

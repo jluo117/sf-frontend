@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { ContactInput } from "./types";
 
+export const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
+
 /**
  * Client/server-shared validation for the contact form.
  *
@@ -38,6 +40,10 @@ export const contactInputSchema = z.object({
     .max(320, "Email must be 320 characters or fewer")
     .pipe(z.email("Enter a valid email address"))
     .transform((value) => value.toLowerCase()),
+  profile_picture: optionalText(2048, "Profile picture URL").refine(
+    (value) => value === null || z.url().safeParse(value).success,
+    "Enter a valid profile picture URL",
+  ),
   phone: optionalText(40, "Phone"),
   company: optionalText(200, "Company"),
   job_title: optionalText(200, "Job title"),
@@ -77,11 +83,12 @@ export function zodFieldErrors(
 export interface ContactFieldSpec {
   name: keyof ContactInput;
   label: string;
-  type?: "text" | "email" | "tel" | "textarea";
+  type?: "text" | "email" | "tel" | "file" | "textarea";
   required?: boolean;
   maxLength: number;
   placeholder?: string;
   autoComplete?: string;
+  accept?: string;
   /** Column span inside the section grid. */
   wide?: boolean;
 }
@@ -121,6 +128,14 @@ export const CONTACT_FIELD_GROUPS: ContactFieldGroup[] = [
         maxLength: 320,
         placeholder: "ada@example.com",
         autoComplete: "email",
+      },
+      {
+        name: "profile_picture",
+        label: "Profile picture",
+        type: "file",
+        maxLength: 2048,
+        accept: "image/jpeg,image/png,image/webp,image/gif",
+        wide: true,
       },
       {
         name: "phone",
@@ -221,7 +236,7 @@ export function formDataToValues(
   return Object.fromEntries(
     CONTACT_FIELDS.map((field) => [
       field.name,
-      String(formData.get(field.name) ?? ""),
+      field.type === "file" ? "" : String(formData.get(field.name) ?? ""),
     ]),
   ) as Record<keyof ContactInput, string>;
 }
