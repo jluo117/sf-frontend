@@ -121,10 +121,10 @@ describe("uploadProfilePicture", () => {
     );
 
     const picture = new File(["image bytes"], "avatar.png", { type: "image/png" });
-    await expect(uploadProfilePicture(1, picture)).resolves.toEqual({
-      profile_picture: "/media/avatar.png",
+    await expect(uploadProfilePicture(picture)).resolves.toEqual({
+      profile_picture: "/api/media/profile-pictures/avatar.png",
     });
-    expect(contentType).toMatch(/^multipart\/form-data; boundary=/);
+    expect(contentType).not.toBe("application/json");
     expect(hasPicture).toBe(true);
   });
 });

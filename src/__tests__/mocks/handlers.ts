@@ -88,7 +88,7 @@ export const handlers = [
     return HttpResponse.json(makeContact({ ...body, id: Number(params.id) }));
   }),
 
-  http.post(api("/api/v1/contacts/:id/profile-picture"), () =>
+  http.post(api("/api/v1/media/profile-picture"), () =>
     HttpResponse.json({ profile_picture: "/media/profile-pictures/avatar.png" }),
   ),
 

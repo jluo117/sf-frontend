@@ -80,7 +80,7 @@ export async function saveContactAction(
         : await replaceContact(contactId, input);
 
     if (profilePicture instanceof File && profilePicture.size > 0) {
-      const uploaded = await uploadProfilePicture(saved.id, profilePicture);
+      const uploaded = await uploadProfilePicture(profilePicture);
       saved = await replaceContact(saved.id, {
         ...input,
         profile_picture: uploaded.profile_picture,

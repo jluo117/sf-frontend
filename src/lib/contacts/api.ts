@@ -87,19 +87,18 @@ export async function updateContact(
 }
 
 export async function uploadProfilePicture(
-  id: number,
   picture: File,
 ): Promise<{ profile_picture: string }> {
   const formData = new FormData();
   formData.set("picture", picture);
   const result = await apiJson<{ profile_picture: string }>(
-    `${CONTACTS_PATH}/${id}/profile-picture`,
+    "/api/v1/media/profile-picture",
     { method: "POST", body: formData },
   );
 
   return {
-    profile_picture: result.profile_picture.startsWith("/")
-      ? apiUrl(result.profile_picture)
+    profile_picture: result.profile_picture.startsWith("/media/")
+      ? `/api${result.profile_picture}`
       : result.profile_picture,
   };
 }
