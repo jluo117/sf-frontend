@@ -16,6 +16,7 @@ export function makeContact(overrides: Partial<Contact> = {}): Contact {
     first_name,
     last_name,
     email: "ada@example.com",
+    profile_picture: null,
     phone: "+1-415-555-0101",
     company: "Analytical Engines",
     job_title: "Mathematician",
@@ -86,6 +87,10 @@ export const handlers = [
     const body = (await request.json()) as Partial<Contact>;
     return HttpResponse.json(makeContact({ ...body, id: Number(params.id) }));
   }),
+
+  http.post(api("/api/v1/contacts/:id/profile-picture"), () =>
+    HttpResponse.json({ profile_picture: "/media/profile-pictures/avatar.png" }),
+  ),
 
   http.delete(api("/api/v1/contacts/:id"), () => new HttpResponse(null, { status: 204 })),
 ];

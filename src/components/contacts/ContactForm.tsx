@@ -56,6 +56,13 @@ export default function ContactForm({
 
   return (
     <form action={formAction} noValidate className="space-y-8">
+      {contact ? (
+        <input
+          type="hidden"
+          name="existing_profile_picture"
+          value={contact.profile_picture ?? ""}
+        />
+      ) : null}
       {state.status === "error" && state.message ? (
         <div
           role="alert"

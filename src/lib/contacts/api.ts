@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ApiError, apiFetch, apiJson } from "@/lib/apiClient";
+import { ApiError, apiFetch, apiJson, apiUrl } from "@/lib/apiClient";
 import type {
   Contact,
   ContactInput,
@@ -84,6 +84,24 @@ export async function updateContact(
     method: "PATCH",
     body: JSON.stringify(patch),
   });
+}
+
+export async function uploadProfilePicture(
+  id: number,
+  picture: File,
+): Promise<{ profile_picture: string }> {
+  const formData = new FormData();
+  formData.set("picture", picture);
+  const result = await apiJson<{ profile_picture: string }>(
+    `${CONTACTS_PATH}/${id}/profile-picture`,
+    { method: "POST", body: formData },
+  );
+
+  return {
+    profile_picture: result.profile_picture.startsWith("/")
+      ? apiUrl(result.profile_picture)
+      : result.profile_picture,
+  };
 }
 
 export async function deleteContact(id: number): Promise<void> {

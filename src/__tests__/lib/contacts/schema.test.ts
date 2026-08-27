@@ -10,6 +10,7 @@ function values(overrides: Record<string, string> = {}) {
     first_name: "Ada",
     last_name: "Lovelace",
     email: "Ada@Example.com",
+    profile_picture: "",
     phone: "",
     company: "",
     job_title: "",
@@ -29,6 +30,7 @@ describe("contactInputSchema", () => {
 
     expect(parsed.email).toBe("ada@example.com");
     expect(parsed.phone).toBeNull();
+    expect(parsed.profile_picture).toBeNull();
     expect(parsed.notes).toBeNull();
   });
 
@@ -54,6 +56,21 @@ describe("contactInputSchema", () => {
   it("rejects a malformed email", () => {
     const result = contactInputSchema.safeParse(values({ email: "not-an-email" }));
     expect(zodFieldErrors(result.error!).email).toBe("Enter a valid email address");
+  });
+
+  it("accepts a profile picture URL and rejects invalid URLs", () => {
+    expect(
+      contactInputSchema.parse(
+        values({ profile_picture: " https://example.com/ada.jpg " }),
+      ).profile_picture,
+    ).toBe("https://example.com/ada.jpg");
+
+    const result = contactInputSchema.safeParse(
+      values({ profile_picture: "not-a-url" }),
+    );
+    expect(zodFieldErrors(result.error!).profile_picture).toBe(
+      "Enter a valid profile picture URL",
+    );
   });
 
   it("enforces the API's length limits", () => {
